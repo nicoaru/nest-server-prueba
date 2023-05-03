@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './models/user.schema';
-import { Task, TaskSchema } from './models/task.schema';
-import { UserRepository } from './repositories/user.repository';
+import { User, UserSchema } from './models/user.schema.mongo';
+import { Task, TaskSchema } from './models/task.schema.mongo';
+import { UserRepositoryMongo } from './repositories/user.repository.mongo';
+import { TaskRepositoryMongo } from './repositories/task.repository.mongo';
 
 @Module({
     imports: [
@@ -21,15 +22,19 @@ import { UserRepository } from './repositories/user.repository';
         ])
     ],
     providers: [
-        User,
-        Task,
-        UserRepository
+        {
+            provide: 'USER_REPOSITORY',
+            useClass: UserRepositoryMongo
+        },
+        {
+            provide: 'TASK_REPOSITORY',
+            useClass: TaskRepositoryMongo
+        }
     ],
     exports: [
         MongooseModule,
-        User,
-        Task,
-        UserRepository
+        'USER_REPOSITORY',
+        'TASK_REPOSITORY',
     ]
 })
 export class MongoDBModule {}

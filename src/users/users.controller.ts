@@ -5,7 +5,7 @@ import { UpdateUserRequestDto } from './dto/request/update-user-request.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   create(@Body() createUserDto: CreateUserRequestDto) {
