@@ -1,15 +1,20 @@
-import { IsDefined, IsEmail, IsNotEmpty } from "class-validator";
+import { IsDefined, IsEmail, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateUserRequestDto {
+    // Decoradores son para el ValidationPipe
+    @IsDefined()
+    @IsNotEmpty()
+    @IsString()
+    username: string;
+
+    @IsDefined()
+    @IsEmail()
+    @IsString()
+    email: string;
     
     @IsDefined()
     @IsNotEmpty()
-    username: string;
-    @IsDefined()
-    @IsEmail()
-    email: string;
-    @IsDefined()
-    @IsNotEmpty()
+    @IsString()
     password: string;
 
 }

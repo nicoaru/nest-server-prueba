@@ -2,10 +2,15 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { UsersService } from './users.service';
 import { CreateUserRequestDto } from './dto/request/create-user-request.dto';
 import { UpdateUserRequestDto } from './dto/request/update-user-request.dto';
+import { ParseIdPipe } from 'src/pipes/parseId.pipe';
+
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(
+    private readonly usersService: UsersService,
+  ) { }
+
 
   @Post()
   create(@Body() createUserDto: CreateUserRequestDto) {
@@ -14,23 +19,22 @@ export class UsersController {
 
   @Get()
   findAll() {
-    console.log("Entró en GET /users")
     return this.usersService.findAll();
   }
 
   @Get('/:id')
-  findOne(@Param('id') id: string) {
-    console.log("Entró en GET /users/:id")
-    return this.usersService.findOne(id);
+  findById(@Param('id', ParseIdPipe) id: string) {
+    return this.usersService.findById(id);
   }
 
   @Patch('/:id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserRequestDto) {
-    return this.usersService.update(id, updateUserDto);
+  updateById(@Param('id', ParseIdPipe) id: string, @Body() updateUserDto: UpdateUserRequestDto) {
+    return this.usersService.updateById(id, updateUserDto);
   }
 
   @Delete('/:id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  removeById(@Param('id', ParseIdPipe) id: string) {
+    return this.usersService.removeById(id);
+
   }
 }

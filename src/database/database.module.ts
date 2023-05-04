@@ -21,8 +21,8 @@ export class DatabaseModule {
         return {
           module: DatabaseModule,
           imports: imports,
-          providers: [DatabaseService, ConfigModule],
-          exports: [DatabaseService, ConfigModule],
+          providers: [DatabaseService],
+          exports: [DatabaseService],
         };
       }
     

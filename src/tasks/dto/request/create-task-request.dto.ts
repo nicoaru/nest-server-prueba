@@ -1,14 +1,21 @@
+import { IsDefined, IsNotEmpty, IsEmail, IsString, IsBoolean } from "class-validator";
+
 export class CreateTaskRequestDto {
-    userId: string | number;    
+    // Decoradores son para el ValidationPipe
+    @IsDefined()
+    @IsNotEmpty()
+    @IsString()
+    userId: string;
+
+    @IsDefined()
+    @IsNotEmpty()
+    @IsString()
     title: string;
+
+    @IsString()
     content: string;
-    completed: boolean;    
 
-
-    constructor(userId?: string, title?: string, content?: string, completed?: boolean) {
-        this.userId = userId;
-        this.title = title;
-        this.content = content;
-        this.completed = completed
-    }
+    @IsBoolean()
+    completed: boolean;
+     
 }

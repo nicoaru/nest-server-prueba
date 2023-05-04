@@ -3,13 +3,12 @@ import { TasksModule } from './tasks/tasks.module';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
-import { MongooseModule } from '@nestjs/mongoose';
-
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: 'dev.env'
     }),
     TasksModule, 

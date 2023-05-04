@@ -10,4 +10,6 @@ export interface IRepository<T> {
 
     removeById(id:string|number):Promise<T>;
 
+    existsById(id:string|number):Promise<boolean>;
+
 }
