@@ -2,14 +2,17 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { CreateUserRequestDto } from './dto/request/create-user-request.dto';
 import { UpdateUserRequestDto } from './dto/request/update-user-request.dto';
 import { DatabaseService } from 'src/database/database.service';
-import { UserEntity } from 'src/database/entities/user.entity';
+import { UserEntity } from 'src/entities/user.entity';
 import { IRepositoryUser } from 'src/interfaces/repositoryUser.interface';
 import { IPaginationOptions } from 'src/interfaces/paginationOptions.interface';
 import { IRepositoryTask } from 'src/interfaces/repositoryTask.interface';
-import { TaskEntity } from 'src/database/entities/task.entity';
+import { TaskEntity } from 'src/entities/task.entity';
 import { DeleteUserResponseDto } from './dto/response/delete-user-response.dto';
 import { UserResponseDto } from './dto/response/user-response.dto';
 import { TaskResponseDto } from 'src/tasks/dto/response/task-response.dto';
+import { getPaginationData } from 'src/utils/utils';
+import { UserPageResponseDto } from './dto/response/user-page-response.dto';
+import { TaskPageResponseDto } from 'src/tasks/dto/response/task-page-response.dto';
 
 
 @Injectable()
@@ -32,12 +35,20 @@ export class UsersService {
     return await this.userRepository.create(createUserDto);
   }
   
-  async findAll() {
-    return await this.userRepository.findAll();
+  async findAll(sort:string) {
+    return await this.userRepository.findAll(sort);
   }
 
-  async findPaginated(paginationOptions:IPaginationOptions) {
-    return await this.userRepository.findPaginated(paginationOptions)
+
+  async findPaginated(paginationOptions:IPaginationOptions, sort:string) {
+    const totalDocs = await this.userRepository.countDocs();
+    const {page, skip, limit, prevPage, nextPage} = getPaginationData(paginationOptions, totalDocs);
+    
+    const usersDtos:UserResponseDto[] = await this.userRepository.findPaginated(skip, limit, sort);
+    
+    const pageResponse = new UserPageResponseDto(usersDtos, totalDocs, page, prevPage, nextPage, limit);
+    
+    return pageResponse;
   }
 
   
@@ -47,16 +58,22 @@ export class UsersService {
     return user
   }
 
-  async findTasksByUserId(id: string|number) {
-    const tasks = await this.taskRepository.findAllByUserId(id);
+  async findTasksByUserId(id: string|number, sort:string) {
+    const tasks = await this.taskRepository.findAllByUserId(id, sort);
 
     return tasks;
   }
 
-  async findTasksByUserIdPaginated(id: string|number, paginationOptions:IPaginationOptions) {
-    const tasks = await this.taskRepository.findPaginatedByUserId(id, paginationOptions);
-
-    return tasks;
+  async findTasksByUserIdPaginated(userId:string|number, paginationOptions:IPaginationOptions, sort) {
+    //** El userId ya lo parseó el pipe
+    const totalDocs = await this.taskRepository.countDocsByUserId(userId);
+    const {page, skip, limit, prevPage, nextPage} = getPaginationData(paginationOptions, totalDocs);
+    
+    const tasksDtos:TaskResponseDto[] = await this.taskRepository.findPaginatedByUserId(userId, skip, limit, sort);
+    
+    const pageResponse = new TaskPageResponseDto(tasksDtos, totalDocs, page, prevPage, nextPage, limit);
+    
+    return pageResponse;
   }
 
 

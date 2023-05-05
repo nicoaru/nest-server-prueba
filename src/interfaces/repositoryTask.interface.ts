@@ -4,8 +4,11 @@ import { IRepository } from "./repository.interface";
 
 export interface IRepositoryTask<T> extends IRepository<T> {
 
-    findAllByUserId(userId:string|number): Promise<T[]>
-    findPaginatedByUserId(userId:string|number, paginationOptions:IPaginationOptions): Promise<IPageResponse<T>>
+    findAllByUserId(userId:string|number, sort:string): Promise<T[]>
+
+    findPaginatedByUserId(userId:string|number, skip:number, limit:number, sort:string):Promise<T[]>
 
     removeByUserId(userId:string|number): Promise<Record<string, Object>>
+
+    countDocsByUserId(userId:string|number):Promise<number>;
 }

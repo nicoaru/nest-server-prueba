@@ -26,12 +26,13 @@ export class TasksController {
   @Get()
   find(
     @Query('page', new DefaultValuePipe(0), ParseIntPipe) page:number,
-    @Query('limit', new DefaultValuePipe(0), ParseIntPipe) limit:number) {
+    @Query('limit', new DefaultValuePipe(0), ParseIntPipe) limit:number,
+    @Query('sort') sort:string) {
       console.log("entró en GET 'tasks'")
 
       const paginationOptions:IPaginationOptions = {page, limit}
-      if(page > 0) return this.tasksService.findPaginated(paginationOptions)
-      else return this.tasksService.findAll();
+      if(page>0 && limit>0) return this.tasksService.findPaginated(paginationOptions, sort)
+      else return this.tasksService.findAll(sort);
   }
 
   @Get(':id')

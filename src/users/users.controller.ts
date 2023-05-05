@@ -22,12 +22,13 @@ export class UsersController {
   @Get()
   find(
     @Query('page', new DefaultValuePipe(0), ParseIntPipe) page:number,
-    @Query('limit', new DefaultValuePipe(0), ParseIntPipe) limit:number) {
+    @Query('limit', new DefaultValuePipe(0), ParseIntPipe) limit:number,
+    @Query('sort') sort:string) {
       console.log("entró en GET 'users'")
       
       const paginationOptions:IPaginationOptions = {page, limit}
-      if(page > 0) return this.usersService.findPaginated(paginationOptions)
-      else return this.usersService.findAll();
+      if(page>0 && limit>0) return this.usersService.findPaginated(paginationOptions, sort)
+      else return this.usersService.findAll(sort);
   }
 
   @Get('/:id')
@@ -40,14 +41,15 @@ export class UsersController {
   findTasksByUserId(
     @Param('id', ParseIdPipe) id: string|number,
     @Query('page', new DefaultValuePipe(0), ParseIntPipe) page:number,
-    @Query('limit', new DefaultValuePipe(0), ParseIntPipe) limit:number) {
+    @Query('limit', new DefaultValuePipe(0), ParseIntPipe) limit:number,
+    @Query('sort') sort:string) {
       console.log("entró en GET 'users/:id/tasks'")
       
       const paginationOptions:IPaginationOptions = {page, limit}
       console.log("pagination options: ", paginationOptions)
 
-      if(page > 0) return this.usersService.findTasksByUserIdPaginated(id, paginationOptions)
-      else return this.usersService.findTasksByUserId(id);
+      if(page>0 && limit>0) return this.usersService.findTasksByUserIdPaginated(id, paginationOptions, sort)
+      else return this.usersService.findTasksByUserId(id, sort);
 
   }
 

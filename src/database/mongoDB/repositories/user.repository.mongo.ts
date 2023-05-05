@@ -1,19 +1,14 @@
 import { User, UserDocument } from "../models/user.schema.mongo";
 import { InjectConnection, InjectModel } from "@nestjs/mongoose";
-import mongoose, { Document, Model } from "mongoose";
-import { BadGatewayException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import mongoose, { Model } from "mongoose";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { UpdateUserRequestDto } from "src/users/dto/request/update-user-request.dto";
 import { CreateUserRequestDto } from "src/users/dto/request/create-user-request.dto";
 import { IRepositoryUser } from "src/interfaces/repositoryUser.interface";
-import { IPaginationOptions } from "src/interfaces/paginationOptions.interface";
-import { getSkipAndLimitPagination } from "src/utils/utils";
-import { IPageResponse } from "src/interfaces/pageResponse.interface";
 import { UserResponseDto } from "src/users/dto/response/user-response.dto";
-import { UserPageResponseDto } from "src/users/dto/response/user-page-response.dto";
 import { MapperMongo } from "../mappers/mapperMongo";
 import { DeleteUserResponseDto } from "src/users/dto/response/delete-user-response.dto";
-import { Task, TaskDocument } from "../models/task.schema.mongo";
-import { response } from "express";
+import { Task } from "../models/task.schema.mongo";
 
 
 @Injectable()
@@ -35,29 +30,16 @@ export class UserRepositoryMongo implements IRepositoryUser<UserResponseDto> {
         return dto;
     }
 
-    async findAll(): Promise<UserResponseDto[]> {
-        const docs = await this.userModel.find();
+    async findAll(sort:string): Promise<UserResponseDto[]> {
+        const docs = await this.userModel.find().sort(sort);
         const dtos = this.mapper.userArrayToResponseDto(docs);
         return dtos;
     }
 
-    async findPaginated(paginationOptions:IPaginationOptions): Promise<IPageResponse<UserResponseDto>> {
-        const {skip} = getSkipAndLimitPagination(paginationOptions);
-        const {page, limit} = paginationOptions;
-
-        let totalDocs:number = await this.userModel.count();
-        let docs:UserDocument[] = await this.userModel.find().skip(skip).limit(limit);
-        let dtos:UserResponseDto[] = this.mapper.userArrayToResponseDto(docs);
-
-        const pageResponse = new UserPageResponseDto;
-        pageResponse.docs = dtos;
-        pageResponse.totalDocs = totalDocs;
-        pageResponse.page = page;
-        pageResponse.limit = limit;
-        pageResponse.prevPage = page>1 ? page-1 : null;
-        pageResponse.nextPage = (page*limit)>=totalDocs ? null : page+1;
-        
-        return pageResponse;
+    async findPaginated(skip:number, limit:number, sort:string): Promise<UserResponseDto[]> {
+        const docs = await this.userModel.find().skip(skip).limit(limit).sort(sort);
+        const dtos = this.mapper.userArrayToResponseDto(docs);
+        return dtos;
     }
 
 
@@ -125,4 +107,27 @@ export class UserRepositoryMongo implements IRepositoryUser<UserResponseDto> {
         else return false;
     }
 
+    async countDocs(): Promise<number> {
+        return await this.userModel.count();
+    }
+
 }
+
+/*
+    const {skip} = getSkipAndLimitPagination(paginationOptions);
+    const {page, limit} = paginationOptions;
+
+    let totalDocs:number = await this.userModel.count();
+    let docs:UserDocument[] = await this.userModel.find().skip(skip).limit(limit);
+    let dtos:UserResponseDto[] = this.mapper.userArrayToResponseDto(docs);
+
+    const pageResponse = new UserPageResponseDto;
+    pageResponse.docs = dtos;
+    pageResponse.totalDocs = totalDocs;
+    pageResponse.page = page;
+    pageResponse.limit = limit;
+    pageResponse.prevPage = page>1 ? page-1 : null;
+    pageResponse.nextPage = (page*limit)>=totalDocs ? null : page+1;
+    
+    return pageResponse;
+*/

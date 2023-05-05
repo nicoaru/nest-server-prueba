@@ -19,16 +19,6 @@ import { MapperMongo } from './mappers/mapperMongo';
             uri: configService.get<string>('MONGODB_URI'),
             })
         }),
-        MongooseModule.forFeatureAsync([
-            {
-              name: User.name,
-              useFactory: () => {
-                const schema = UserSchema;
-                schema.plugin(require('mongoose-paginate-v2'));
-                return schema;
-              },
-            },
-        ]),
         MongooseModule.forFeature([
             {name: User.name, schema: UserSchema}, 
             {name: Task.name, schema: TaskSchema}

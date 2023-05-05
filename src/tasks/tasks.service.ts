@@ -6,6 +6,8 @@ import { IRepositoryTask } from 'src/interfaces/repositoryTask.interface';
 import { IRepositoryUser } from 'src/interfaces/repositoryUser.interface';
 import { IPaginationOptions } from 'src/interfaces/paginationOptions.interface';
 import { TaskResponseDto } from './dto/response/task-response.dto';
+import { getPaginationData } from 'src/utils/utils';
+import { TaskPageResponseDto } from './dto/response/task-page-response.dto';
 
 
 @Injectable()
@@ -31,13 +33,21 @@ export class TasksService {
     return await this.taskRepository.create(createTaskDto);
   }
   
-  async findAll() {
-    return await this.taskRepository.findAll();
+  async findAll(sort:string) {
+    return await this.taskRepository.findAll(sort);
   }
 
-  async findPaginated(paginationOptions:IPaginationOptions) {
-    return await this.taskRepository.findPaginated(paginationOptions)
+  async findPaginated(paginationOptions:IPaginationOptions, sort:string) {
+    const totalDocs = await this.taskRepository.countDocs();
+    const {page, skip, limit, prevPage, nextPage} = getPaginationData(paginationOptions, totalDocs);
+    
+    const tasksDtos:TaskResponseDto[] = await this.taskRepository.findPaginated(skip, limit, sort);
+    
+    const pageResponse = new TaskPageResponseDto(tasksDtos, totalDocs, page, prevPage, nextPage, limit);
+    
+    return pageResponse;
   }
+
   
   async findById(id: string|number) {
     const task = await this.taskRepository.findById(id);
@@ -45,14 +55,21 @@ export class TasksService {
     return task
   }
 
-  async findAllByUserId(userId:string|number) {
+  async findAllByUserId(userId:string|number, sort:string) {
     //** El userId ya lo parseó el pipe
-    return await this.taskRepository.findAllByUserId(userId)
+    return await this.taskRepository.findAllByUserId(userId, sort)
   }
 
-  async findByUserId(userId:string|number, paginationOptions:IPaginationOptions) {
+  async findPaginatedByUserId(userId:string|number, paginationOptions:IPaginationOptions, sort:string) {
     //** El userId ya lo parseó el pipe
-    return await this.taskRepository.findPaginatedByUserId(userId, paginationOptions)
+    const totalDocs = await this.taskRepository.countDocsByUserId(userId);
+    const {page, skip, limit, prevPage, nextPage} = getPaginationData(paginationOptions, totalDocs);
+    
+    const tasksDtos:TaskResponseDto[] = await this.taskRepository.findPaginatedByUserId(userId, skip, limit, sort);
+    
+    const pageResponse = new TaskPageResponseDto(tasksDtos, totalDocs, page, prevPage, nextPage, limit);
+    
+    return pageResponse;
   }
 
   async updateById(id: string|number, updateTaskDto: UpdateTaskRequestDto) {

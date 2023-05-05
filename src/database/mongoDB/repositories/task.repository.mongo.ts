@@ -1,18 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { IRepository } from "src/interfaces/repository.interface";
-import { TaskEntity } from "src/database/entities/task.entity";
 import { InjectModel } from "@nestjs/mongoose";
-import { Task, TaskDocument } from "../models/task.schema.mongo";
-import { Model, Types } from "mongoose";
+import { Task } from "../models/task.schema.mongo";
+import { Model } from "mongoose";
 import { CreateTaskRequestDto } from "src/tasks/dto/request/create-task-request.dto";
 import { UpdateTaskRequestDto } from "src/tasks/dto/request/update-task-request.dto";
-import { IPaginationOptions } from "src/interfaces/paginationOptions.interface";
-import { getSkipAndLimitPagination } from "src/utils/utils";
 import { IRepositoryTask } from "src/interfaces/repositoryTask.interface";
 import { MapperMongo } from "../mappers/mapperMongo";
-import { IPageResponse } from "src/interfaces/pageResponse.interface";
 import { TaskResponseDto } from "src/tasks/dto/response/task-response.dto";
-import { TaskPageResponseDto } from "src/tasks/dto/response/task-page-response.dto";
 
 
 @Injectable()
@@ -21,6 +15,7 @@ export class TaskRepositoryMongo implements IRepositoryTask<TaskResponseDto> {
         @InjectModel(Task.name) private readonly taskModel:Model<Task>,
         private readonly mapper:MapperMongo
     ) { }
+
     
     
     
@@ -30,56 +25,30 @@ export class TaskRepositoryMongo implements IRepositoryTask<TaskResponseDto> {
         return dto;
     }
 
-    async findAll(): Promise<TaskResponseDto[]> {
-        const docs = await this.taskModel.find();
+    async findAll(sort:string): Promise<TaskResponseDto[]> {
+        const docs = await this.taskModel.find().sort(sort);
         const dtos = this.mapper.taskArrayToResponseDto(docs);
         return dtos;
     }
 
-    async findPaginated(paginationOptions:IPaginationOptions): Promise<IPageResponse<TaskResponseDto>> {
-        const {skip} = getSkipAndLimitPagination(paginationOptions);
-        const {page, limit} = paginationOptions;
-
-        let totalDocs:number = await this.taskModel.count();
-        let docs:TaskDocument[] = await this.taskModel.find().skip(skip).limit(limit);
-        let dtos:TaskResponseDto[] = this.mapper.taskArrayToResponseDto(docs);
-
-        const pageResponse = new TaskPageResponseDto;
-        pageResponse.docs = dtos;
-        pageResponse.totalDocs = totalDocs;
-        pageResponse.page = page;
-        pageResponse.limit = limit;
-        pageResponse.prevPage = page>1 ? page-1 : null;
-        pageResponse.nextPage = (page*limit)>=totalDocs ? null : page+1;
-        
-        return pageResponse;
-    }
-    
-
-    async findAllByUserId(userId:string|number): Promise<TaskResponseDto[]> {
-        const docs = await this.taskModel.find({userId: userId});
+    async findPaginated(skip:number, limit:number, sort:string): Promise<TaskResponseDto[]> {
+        const docs = await this.taskModel.find().skip(skip).limit(limit).sort(sort);
         const dtos = this.mapper.taskArrayToResponseDto(docs);
         return dtos;
     }
     
 
-    async findPaginatedByUserId(userId:string, paginationOptions:IPaginationOptions): Promise<IPageResponse<TaskResponseDto>> {
-        const {skip} = getSkipAndLimitPagination(paginationOptions);
-        const {page, limit} = paginationOptions;
+    async findAllByUserId(userId:string|number, sort:string): Promise<TaskResponseDto[]> {
+        const docs = await this.taskModel.find({userId: userId}).sort(sort);
+        const dtos = this.mapper.taskArrayToResponseDto(docs);
+        return dtos;
+    }
+    
 
-        let totalDocs:number = await this.taskModel.count({userId: userId});
-        let docs:TaskDocument[] = await this.taskModel.find({userId: userId}).skip(skip).limit(limit);
-        let dtos:TaskResponseDto[] = this.mapper.taskArrayToResponseDto(docs);
-
-        const pageResponse = new TaskPageResponseDto;
-        pageResponse.docs = dtos;
-        pageResponse.totalDocs = totalDocs;
-        pageResponse.page = page;
-        pageResponse.limit = limit;
-        pageResponse.prevPage = page>1 ? page-1 : null;
-        pageResponse.nextPage = (page*limit)>=totalDocs ? null : page+1;
-        
-        return pageResponse;
+    async findPaginatedByUserId(userId:string|number, skip:number, limit:number, sort:string): Promise<TaskResponseDto[]> {
+        const docs = await this.taskModel.find({userId: userId}).skip(skip).limit(limit).sort(sort);
+        const dtos = this.mapper.taskArrayToResponseDto(docs);
+        return dtos;
     }
 
 
@@ -114,4 +83,11 @@ export class TaskRepositoryMongo implements IRepositoryTask<TaskResponseDto> {
         else return false;
     }
 
+    async countDocs(): Promise<number> {
+        return await this.taskModel.count();
+    }
+
+    async countDocsByUserId(userId:string|number): Promise<number> {
+        return await this.taskModel.count({userId: userId});
+    }
 }

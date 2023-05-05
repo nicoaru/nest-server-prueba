@@ -9,4 +9,14 @@ export class TaskPageResponseDto implements IPageResponse<TaskResponseDto> {
     prevPage: number;
     nextPage: number;
     limit: number;
+    
+
+    constructor(docs:TaskResponseDto[], totalDocs:number, page:number, prevPage:number, nextPage:number, limit:number) {
+        this.docs = docs;
+        this.totalDocs = totalDocs;
+        this.page = page;
+        this.prevPage = prevPage;
+        this.nextPage = nextPage;
+        this.limit = limit;
+    }
 }

@@ -5,9 +5,9 @@ export interface IRepository<T> {
 
     create(createDTO:any):Promise<T>;
 
-    findAll():Promise<T[]>;
+    findAll(sort:string):Promise<T[]>;
 
-    findPaginated(paginationOptions:IPaginationOptions):Promise<IPageResponse<T>>;
+    findPaginated(skip:number, limit:number, sort:string):Promise<T[]>;
 
     findById(id:string|number):Promise<T>;
 
@@ -16,5 +16,8 @@ export interface IRepository<T> {
     removeById(id:string|number):Promise<T>;
 
     existsById(id:string|number):Promise<boolean>;
+    existsById(id:string|number):Promise<boolean>;
+
+    countDocs():Promise<number>;
 
 }

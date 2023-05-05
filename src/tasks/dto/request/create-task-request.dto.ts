@@ -1,13 +1,13 @@
-import { IsDefined, IsNotEmpty, IsEmail, IsString, IsBoolean } from "class-validator";
+import { IsDefined, IsNotEmpty, IsEmail, IsString, IsBoolean, ValidateNested } from "class-validator";
+import { UpdateUserRequestDto } from "src/users/dto/request/update-user-request.dto";
 
 export class CreateTaskRequestDto {
     // Decoradores son para el ValidationPipe
-    @IsDefined()
+
     @IsNotEmpty()
     @IsString()
     userId: string;
 
-    @IsDefined()
     @IsNotEmpty()
     @IsString()
     title: string;
@@ -19,3 +19,5 @@ export class CreateTaskRequestDto {
     completed: boolean;
      
 }
+
+
