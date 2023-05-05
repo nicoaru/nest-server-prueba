@@ -14,7 +14,11 @@ export class ParseIdPipe implements PipeTransform {
     switch (this.dbType) {
       case 'MongoDB':
           try {
-            return new Types.ObjectId(value);
+            let result:any;
+            value 
+              ? result = new Types.ObjectId(value)
+              : result = value;
+            return result;
           }
           catch(error) { 
             throw new BadRequestException("Invalid Id type - "+error.message);

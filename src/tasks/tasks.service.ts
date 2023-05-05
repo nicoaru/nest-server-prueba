@@ -2,14 +2,15 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateTaskRequestDto } from './dto/request/create-task-request.dto';
 import { UpdateTaskRequestDto } from './dto/request/update-task-request.dto';
 import { DatabaseService } from 'src/database/database.service';
-import { TaskEntity } from 'src/database/entities/task.entity';
 import { IRepositoryTask } from 'src/interfaces/repositoryTask.interface';
 import { IRepositoryUser } from 'src/interfaces/repositoryUser.interface';
+import { IPaginationOptions } from 'src/interfaces/paginationOptions.interface';
+import { TaskResponseDto } from './dto/response/task-response.dto';
 
 
 @Injectable()
 export class TasksService {
-  taskRepository:IRepositoryTask<TaskEntity>;
+  taskRepository:IRepositoryTask<TaskResponseDto>;
   userRepository:IRepositoryUser<any>;
   idParser:Function;
 
@@ -23,7 +24,7 @@ export class TasksService {
   //** METODOS **//
   //** METODOS **//
   async create(createTaskDto: CreateTaskRequestDto) {
-    //** Chequear que exista el user
+    //** Chequea que exista el user y parsea al Id
     if(!this.idParser(createTaskDto.userId)) throw new BadRequestException("userId invalid format");
     if(!await this.userRepository.existsById(createTaskDto.userId)) throw new NotFoundException("User not found - Unexisting userId in database")
     
@@ -33,6 +34,10 @@ export class TasksService {
   async findAll() {
     return await this.taskRepository.findAll();
   }
+
+  async findPaginated(paginationOptions:IPaginationOptions) {
+    return await this.taskRepository.findPaginated(paginationOptions)
+  }
   
   async findById(id: string|number) {
     const task = await this.taskRepository.findById(id);
@@ -40,10 +45,20 @@ export class TasksService {
     return task
   }
 
+  async findAllByUserId(userId:string|number) {
+    //** El userId ya lo parseó el pipe
+    return await this.taskRepository.findAllByUserId(userId)
+  }
+
+  async findByUserId(userId:string|number, paginationOptions:IPaginationOptions) {
+    //** El userId ya lo parseó el pipe
+    return await this.taskRepository.findPaginatedByUserId(userId, paginationOptions)
+  }
+
   async updateById(id: string|number, updateTaskDto: UpdateTaskRequestDto) {
     //** Chequear que exista el user
     if(!this.idParser(updateTaskDto.userId)) throw new BadRequestException("userId invalid format");
-    if(!await this.userRepository.existsById(updateTaskDto.userId)) throw new NotFoundException("User not found - Unexisting userId in database")
+    if(updateTaskDto.userId && ! await this.userRepository.existsById(updateTaskDto.userId)) throw new NotFoundException("User not found - Unexisting userId in database")
     
     const updatedTask = await this.taskRepository.updateById(id, updateTaskDto);
     if(!updatedTask) throw new NotFoundException("Not Found");  

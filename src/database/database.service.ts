@@ -1,24 +1,25 @@
-import { Injectable, Inject, Optional, PipeTransform } from '@nestjs/common';
-import { UserEntity } from './entities/user.entity';
+import { Injectable, Inject, Optional } from '@nestjs/common';
 import { IRepositoryUser } from 'src/interfaces/repositoryUser.interface';
-import { TaskEntity } from './entities/task.entity';
 import { IRepositoryTask } from 'src/interfaces/repositoryTask.interface';
+import { UserResponseDto } from 'src/users/dto/response/user-response.dto';
+import { TaskResponseDto } from 'src/tasks/dto/response/task-response.dto';
+
 
 
 
 @Injectable()
 export class DatabaseService {
     constructor(
-        @Optional() @Inject('USER_REPOSITORY') private readonly userRepository:IRepositoryUser<UserEntity>,
-        @Optional() @Inject('TASK_REPOSITORY') private readonly taskRepository:IRepositoryTask<TaskEntity>,
+        @Optional() @Inject('USER_REPOSITORY') private readonly userRepository:IRepositoryUser<UserResponseDto>,
+        @Optional() @Inject('TASK_REPOSITORY') private readonly taskRepository:IRepositoryTask<TaskResponseDto>,
         @Optional() @Inject('ID_PARSER') private readonly idParser:Function,
     ) { }
 
-    getUserRepository():IRepositoryUser<UserEntity> {
+    getUserRepository():IRepositoryUser<UserResponseDto> {
         return this.userRepository;
     }
 
-    getTaskRepository():IRepositoryTask<TaskEntity> {
+    getTaskRepository():IRepositoryTask<TaskResponseDto> {
         return this.taskRepository;
     }
 

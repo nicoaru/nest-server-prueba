@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Optional, DefaultValuePipe } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskRequestDto } from './dto/request/create-task-request.dto';
 import { UpdateTaskRequestDto } from './dto/request/update-task-request.dto';
 import { ParseIdPipe } from 'src/pipes/parseId.pipe';
+import { IPaginationOptions } from 'src/interfaces/paginationOptions.interface';
 
 
 
@@ -17,23 +18,34 @@ export class TasksController {
     return this.tasksService.create(createTaskDto);
   }
 
+  // @Query 
+  //    userId
+  //    sort
+  //    page
+  //    limit
   @Get()
-  findAll() {
-    return this.tasksService.findAll();
+  find(
+    @Query('page', new DefaultValuePipe(0), ParseIntPipe) page:number,
+    @Query('limit', new DefaultValuePipe(0), ParseIntPipe) limit:number) {
+      console.log("entró en GET 'tasks'")
+
+      const paginationOptions:IPaginationOptions = {page, limit}
+      if(page > 0) return this.tasksService.findPaginated(paginationOptions)
+      else return this.tasksService.findAll();
   }
 
   @Get(':id')
-  findById(@Param('id', ParseIdPipe) id: string) {
+  findById(@Param('id', ParseIdPipe) id: string|number) {
     return this.tasksService.findById(id);
   }
 
   @Patch(':id')
-  updateById(@Param('id', ParseIdPipe) id: string, @Body() updateTaskDto: UpdateTaskRequestDto) {
+  updateById(@Param('id', ParseIdPipe) id: string|number, @Body() updateTaskDto: UpdateTaskRequestDto) {
     return this.tasksService.updateById(id, updateTaskDto);
   }
 
   @Delete(':id')
-  removeById(@Param('id', ParseIdPipe) id: string) {
+  removeById(@Param('id', ParseIdPipe) id: string|number) {
     return this.tasksService.removeById(id);
   }
 }

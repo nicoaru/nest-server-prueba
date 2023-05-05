@@ -5,7 +5,8 @@ import { User, UserSchema } from './models/user.schema.mongo';
 import { Task, TaskSchema } from './models/task.schema.mongo';
 import { UserRepositoryMongo } from './repositories/user.repository.mongo';
 import { TaskRepositoryMongo } from './repositories/task.repository.mongo';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { MapperMongo } from './mappers/mapperMongo';
 
 
 @Module({
@@ -18,12 +19,23 @@ import { Types } from 'mongoose';
             uri: configService.get<string>('MONGODB_URI'),
             })
         }),
+        MongooseModule.forFeatureAsync([
+            {
+              name: User.name,
+              useFactory: () => {
+                const schema = UserSchema;
+                schema.plugin(require('mongoose-paginate-v2'));
+                return schema;
+              },
+            },
+        ]),
         MongooseModule.forFeature([
             {name: User.name, schema: UserSchema}, 
             {name: Task.name, schema: TaskSchema}
         ])
     ],
     providers: [
+        MapperMongo,
         {
             provide: 'USER_REPOSITORY',
             useClass: UserRepositoryMongo
@@ -52,6 +64,38 @@ import { Types } from 'mongoose';
     ]
 })
 export class MongoDBModule {}
+
+
+/*
+    MongooseModule.forFeatureAsync([
+        {
+            name: Task.name,
+            useFactory: () => {
+            const schema = TaskSchema;
+            schema.plugin(require('mongoose-paginate-v2'));
+            return schema;
+            },
+        },
+    ])
+*/
+
+/*
+
+imports: [
+    MongooseModule.forFeatureAsync([
+      {
+        name: Cat.name,
+        useFactory: () => {
+          const schema = CatsSchema;
+          schema.plugin(require('mongoose-autopopulate'));
+          return schema;
+        },
+      },
+    ]),
+  ]
+  
+*/
+
 
 
 /*
