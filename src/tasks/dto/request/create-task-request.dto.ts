@@ -19,5 +19,3 @@ export class CreateTaskRequestDto {
     completed: boolean;
      
 }
-
-

@@ -1,9 +1,9 @@
 import { IPageResponse } from "./pageResponse.interface";
 import { IPaginationOptions } from "./paginationOptions.interface";
 
-export interface IRepository<T> {
+export interface IRepository<T, Q, R> {
 
-    create(createDTO:any):Promise<T>;
+    create(createDTO:Q):Promise<T>;
 
     findAll(sort:string):Promise<T[]>;
 
@@ -11,7 +11,7 @@ export interface IRepository<T> {
 
     findById(id:string|number):Promise<T>;
 
-    updateById(id:string|number, updateDTO:any):Promise<T>;
+    updateById(id:string|number, updateDTO:R):Promise<T>;
 
     removeById(id:string|number):Promise<T>;
 

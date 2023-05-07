@@ -6,7 +6,7 @@ import { Task, TaskSchema } from './models/task.schema.mongo';
 import { UserRepositoryMongo } from './repositories/user.repository.mongo';
 import { TaskRepositoryMongo } from './repositories/task.repository.mongo';
 import mongoose, { Types } from 'mongoose';
-import { MapperMongo } from './mappers/mapperMongo';
+import { Mapper } from '../../mappers/mapper';
 
 
 @Module({
@@ -25,7 +25,7 @@ import { MapperMongo } from './mappers/mapperMongo';
         ])
     ],
     providers: [
-        MapperMongo,
+        Mapper,
         {
             provide: 'USER_REPOSITORY',
             useClass: UserRepositoryMongo

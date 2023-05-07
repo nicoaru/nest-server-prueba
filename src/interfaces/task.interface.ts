@@ -1,7 +1,7 @@
-export class TaskEntity {
-    id?: number|string;
+export interface ITask {
+    _id: number|string;
     userId: number|string;    
     title: string;
-    content: string;
+    content?: string;
     completed: boolean;
 }

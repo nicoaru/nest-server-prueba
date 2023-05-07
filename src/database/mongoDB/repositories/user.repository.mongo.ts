@@ -6,64 +6,60 @@ import { UpdateUserRequestDto } from "src/users/dto/request/update-user-request.
 import { CreateUserRequestDto } from "src/users/dto/request/create-user-request.dto";
 import { IRepositoryUser } from "src/interfaces/repositoryUser.interface";
 import { UserResponseDto } from "src/users/dto/response/user-response.dto";
-import { MapperMongo } from "../mappers/mapperMongo";
+import { Mapper } from "../../../mappers/mapper";
 import { DeleteUserResponseDto } from "src/users/dto/response/delete-user-response.dto";
 import { Task } from "../models/task.schema.mongo";
+import { IUser } from "src/interfaces/user.interface";
 
 
+//TODO: PASAR A PROMISES TODOS LOS METODOS
 @Injectable()
-export class UserRepositoryMongo implements IRepositoryUser<UserResponseDto> {
+export class UserRepositoryMongo implements IRepositoryUser<IUser, CreateUserRequestDto, UpdateUserRequestDto> {
 
     constructor(
         @InjectModel(User.name) private readonly userModel: Model<User>,
         @InjectModel(Task.name) private readonly taskModel: Model<Task>,
-        private readonly mapper:MapperMongo,
+        private readonly mapper:Mapper,
         @InjectConnection() private readonly dbConnection: mongoose.Connection
     ) { }
 
     
 
     
-    async create(createDto: CreateUserRequestDto): Promise<UserResponseDto> {
+    async create(createDto: CreateUserRequestDto): Promise<IUser> {
         const doc = await this.userModel.create(createDto);
-        const dto = this.mapper.userToResponseDto(doc);
-        return dto;
+        return doc;
     }
 
-    async findAll(sort:string): Promise<UserResponseDto[]> {
+    async findAll(sort:string): Promise<IUser[]> {
         const docs = await this.userModel.find().sort(sort);
-        const dtos = this.mapper.userArrayToResponseDto(docs);
-        return dtos;
+        return docs;
     }
 
-    async findPaginated(skip:number, limit:number, sort:string): Promise<UserResponseDto[]> {
+    async findPaginated(skip:number, limit:number, sort:string): Promise<IUser[]> {
         const docs = await this.userModel.find().skip(skip).limit(limit).sort(sort);
-        const dtos = this.mapper.userArrayToResponseDto(docs);
-        return dtos;
+        return docs;
     }
 
 
-    async findById(id: string | number): Promise<UserResponseDto> {
+    async findById(id: string | number): Promise<IUser> {
         const doc = await this.userModel.findById(id);
-        const dto = this.mapper.userToResponseDto(doc);
-        return dto;
+        return doc;
     }
 
-    async updateById(id: string | number, updatedEntity: UpdateUserRequestDto): Promise<UserResponseDto> {
+    async updateById(id: string | number, updatedEntity: UpdateUserRequestDto): Promise<IUser> {
         const doc = await this.userModel.findByIdAndUpdate(id, updatedEntity, {returnDocument: 'after'});
-        const dto = this.mapper.userToResponseDto(doc);
-        return dto;
+        return doc;
     }
 
-    async removeById(id: string | number): Promise<UserResponseDto> {
+    async removeById(id: string | number): Promise<IUser> {
         const doc = await this.userModel.findByIdAndRemove(id);
-        const dto = this.mapper.userToResponseDto(doc);
-        return dto;  
+        return doc;  
     }
     
-    async removeByIdWithTasks(id: string | number): Promise<DeleteUserResponseDto> {
-        let deletedUser:UserDocument;
-        let deletTasksResult:any;
+    async removeByIdWithTasks(id: string | number): Promise<IUser> {
+        let deletedUser:IUser;
+        //let deletTasksResult:any;
         const session = await this.dbConnection.startSession();
         try {
             session.startTransaction();  
@@ -71,11 +67,11 @@ export class UserRepositoryMongo implements IRepositoryUser<UserResponseDto> {
             deletedUser = await this.userModel.findByIdAndRemove(id, {session});
             if(!deletedUser) throw new NotFoundException();
 
-            deletTasksResult = await this.taskModel.deleteMany({userId: id}, {session});
+            //deletTasksResult = await this.taskModel.deleteMany({userId: id}, {session});
+            await this.taskModel.deleteMany({userId: id}, {session});
            
             await session.commitTransaction();
 
-            
             console.log('success');
         } catch (error) {
             console.log('error - ', error.message);
@@ -84,12 +80,12 @@ export class UserRepositoryMongo implements IRepositoryUser<UserResponseDto> {
         }
         session.endSession();
 
-        const userDto = this.mapper.userToResponseDto(deletedUser);
-        const responseDto = new DeleteUserResponseDto;
-        responseDto.deletedUser = userDto;
-        responseDto.deletedRelatedTasks = deletTasksResult.deletedCount;
+        // const userDto = this.mapper.userToResponseDto(deletedUser);
+        //const responseDto = new DeleteUserResponseDto;
+        //responseDto.deletedUser = userDto;
+        //responseDto.deletedRelatedTasks = deletTasksResult.deletedCount;
 
-        return responseDto;  
+        return deletedUser;  
     }
     
     async existsById(id: string | number): Promise<boolean> {

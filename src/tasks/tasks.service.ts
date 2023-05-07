@@ -8,56 +8,74 @@ import { IPaginationOptions } from 'src/interfaces/paginationOptions.interface';
 import { TaskResponseDto } from './dto/response/task-response.dto';
 import { getPaginationData } from 'src/utils/utils';
 import { TaskPageResponseDto } from './dto/response/task-page-response.dto';
+import { CreateUserRequestDto } from 'src/users/dto/request/create-user-request.dto';
+import { UpdateUserRequestDto } from 'src/users/dto/request/update-user-request.dto';
+import { UserResponseDto } from 'src/users/dto/response/user-response.dto';
+import { Mapper } from 'src/mappers/mapper';
+import { ITask } from 'src/interfaces/task.interface';
+import { IPageResponse } from 'src/interfaces/pageResponse.interface';
 
 
 @Injectable()
 export class TasksService {
-  taskRepository:IRepositoryTask<TaskResponseDto>;
-  userRepository:IRepositoryUser<any>;
+  taskRepository:IRepositoryTask<TaskResponseDto, CreateTaskRequestDto, UpdateTaskRequestDto>;
+  userRepository:IRepositoryUser<UserResponseDto, CreateUserRequestDto, UpdateUserRequestDto>;
   idParser:Function;
 
-  constructor(private readonly databaseService:DatabaseService) {
+  constructor(
+    private readonly databaseService:DatabaseService,
+    private readonly mapper:Mapper
+  ) {
     this.taskRepository = this.databaseService.getTaskRepository();
     this.userRepository = this.databaseService.getUserRepository();
     this.idParser = this.databaseService.getIdParser();
   }
 
-
+  
   //** METODOS **//
   //** METODOS **//
-  async create(createTaskDto: CreateTaskRequestDto) {
+  async create(createTaskDto: CreateTaskRequestDto):Promise<TaskResponseDto> {
     //** Chequea que exista el user y parsea al Id
     if(!this.idParser(createTaskDto.userId)) throw new BadRequestException("userId invalid format");
     if(!await this.userRepository.existsById(createTaskDto.userId)) throw new NotFoundException("User not found - Unexisting userId in database")
     
-    return await this.taskRepository.create(createTaskDto);
+    const createdTask:ITask = await this.taskRepository.create(createTaskDto);
+    const respDto:TaskResponseDto = this.mapper.taskToResponseDto(createdTask);
+    return respDto;
   }
   
-  async findAll(sort:string) {
-    return await this.taskRepository.findAll(sort);
+  async findAll(sort:string):Promise<TaskResponseDto[]> {
+    
+    const tasks:ITask[] = await this.taskRepository.findAll(sort);
+    const respDtos:TaskResponseDto[] = this.mapper.taskArrayToResponseDto(tasks);
+    return respDtos;
   }
 
-  async findPaginated(paginationOptions:IPaginationOptions, sort:string) {
+  async findPaginated(paginationOptions:IPaginationOptions, sort:string):Promise<IPageResponse<TaskResponseDto>> {
     const totalDocs = await this.taskRepository.countDocs();
     const {page, skip, limit, prevPage, nextPage} = getPaginationData(paginationOptions, totalDocs);
     
-    const tasksDtos:TaskResponseDto[] = await this.taskRepository.findPaginated(skip, limit, sort);
+    const tasks:ITask[] = await this.taskRepository.findPaginated(skip, limit, sort);
+    const respDtos:TaskResponseDto[] = this.mapper.taskArrayToResponseDto(tasks);
     
-    const pageResponse = new TaskPageResponseDto(tasksDtos, totalDocs, page, prevPage, nextPage, limit);
-    
+    const pageResponse:IPageResponse<TaskResponseDto> = new TaskPageResponseDto(respDtos, totalDocs, page, prevPage, nextPage, limit);
     return pageResponse;
   }
 
-  
-  async findById(id: string|number) {
-    const task = await this.taskRepository.findById(id);
+  async findById(id: string|number):Promise<TaskResponseDto> {
+    const task:ITask = await this.taskRepository.findById(id);
     if(!task) throw new NotFoundException("Not Found");
-    return task
+    const respDto:TaskResponseDto = this.mapper.taskToResponseDto(task);
+    
+    return respDto;
   }
 
-  async findAllByUserId(userId:string|number, sort:string) {
+  async findAllByUserId(userId:string|number, sort:string):Promise<TaskResponseDto[]> {
     //** El userId ya lo parseó el pipe
-    return await this.taskRepository.findAllByUserId(userId, sort)
+    const tasks:ITask[] = await this.taskRepository.findAllByUserId(userId, sort);
+    const respDtos:TaskResponseDto[] = this.mapper.taskArrayToResponseDto(tasks);
+    
+    return respDtos;
   }
 
   async findPaginatedByUserId(userId:string|number, paginationOptions:IPaginationOptions, sort:string) {
@@ -65,9 +83,11 @@ export class TasksService {
     const totalDocs = await this.taskRepository.countDocsByUserId(userId);
     const {page, skip, limit, prevPage, nextPage} = getPaginationData(paginationOptions, totalDocs);
     
-    const tasksDtos:TaskResponseDto[] = await this.taskRepository.findPaginatedByUserId(userId, skip, limit, sort);
+    const tasks:ITask[] = await this.taskRepository.findPaginatedByUserId(userId, skip, limit, sort);
+    const respDtos:TaskResponseDto[] = this.mapper.taskArrayToResponseDto(tasks);
+
     
-    const pageResponse = new TaskPageResponseDto(tasksDtos, totalDocs, page, prevPage, nextPage, limit);
+    const pageResponse:IPageResponse<TaskResponseDto> = new TaskPageResponseDto(respDtos, totalDocs, page, prevPage, nextPage, limit);
     
     return pageResponse;
   }
@@ -77,14 +97,18 @@ export class TasksService {
     if(!this.idParser(updateTaskDto.userId)) throw new BadRequestException("userId invalid format");
     if(updateTaskDto.userId && ! await this.userRepository.existsById(updateTaskDto.userId)) throw new NotFoundException("User not found - Unexisting userId in database")
     
-    const updatedTask = await this.taskRepository.updateById(id, updateTaskDto);
-    if(!updatedTask) throw new NotFoundException("Not Found");  
-    return updatedTask
+    const updatedTask:ITask = await this.taskRepository.updateById(id, updateTaskDto);
+    if(!updatedTask) throw new NotFoundException("Not Found");
+
+    const respDto:TaskResponseDto = this.mapper.taskToResponseDto(updatedTask);
+    return respDto;
   }
 
   async removeById(id: string|number) {
-    const deletedTask = await this.taskRepository.removeById(id);
+    const deletedTask:ITask = await this.taskRepository.removeById(id);
     if(!deletedTask) throw new NotFoundException("Not Found");
-    return deletedTask
+
+    const respDto:TaskResponseDto = this.mapper.taskToResponseDto(deletedTask);
+    return respDto;
   }
 }

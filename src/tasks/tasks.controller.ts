@@ -18,11 +18,6 @@ export class TasksController {
     return this.tasksService.create(createTaskDto);
   }
 
-  // @Query 
-  //    userId
-  //    sort
-  //    page
-  //    limit
   @Get()
   find(
     @Query('page', new DefaultValuePipe(0), ParseIntPipe) page:number,

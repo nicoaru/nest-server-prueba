@@ -2,7 +2,7 @@ import { IPageResponse } from "./pageResponse.interface";
 import { IPaginationOptions } from "./paginationOptions.interface";
 import { IRepository } from "./repository.interface";
 
-export interface IRepositoryTask<T> extends IRepository<T> {
+export interface IRepositoryTask<T, Q, R> extends IRepository<T, Q, R> {
 
     findAllByUserId(userId:string|number, sort:string): Promise<T[]>
 

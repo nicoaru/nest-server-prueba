@@ -5,71 +5,82 @@ import { Model } from "mongoose";
 import { CreateTaskRequestDto } from "src/tasks/dto/request/create-task-request.dto";
 import { UpdateTaskRequestDto } from "src/tasks/dto/request/update-task-request.dto";
 import { IRepositoryTask } from "src/interfaces/repositoryTask.interface";
-import { MapperMongo } from "../mappers/mapperMongo";
+import { Mapper } from "../../../mappers/mapper";
 import { TaskResponseDto } from "src/tasks/dto/response/task-response.dto";
+import { ITask } from "src/interfaces/task.interface";
 
 
 @Injectable()
-export class TaskRepositoryMongo implements IRepositoryTask<TaskResponseDto> {
+export class TaskRepositoryMongo implements IRepositoryTask<ITask, CreateTaskRequestDto, UpdateTaskRequestDto> {
     constructor(
         @InjectModel(Task.name) private readonly taskModel:Model<Task>,
-        private readonly mapper:MapperMongo
+        private readonly mapper:Mapper
     ) { }
 
     
     
-    
-    async create(createDto: CreateTaskRequestDto): Promise<TaskResponseDto> {
+    //** METODOS **//
+    //** METODOS **//
+    async create(createDto: CreateTaskRequestDto): Promise<ITask> {
         const doc = await this.taskModel.create(createDto);
-        const dto = this.mapper.taskToResponseDto(doc);
-        return dto;
+        return doc;
+
+        //const dto = this.mapper.taskToResponseDto(doc);
+        //return dto;
     }
 
-    async findAll(sort:string): Promise<TaskResponseDto[]> {
+    async findAll(sort:string): Promise<ITask[]> {
         const docs = await this.taskModel.find().sort(sort);
-        const dtos = this.mapper.taskArrayToResponseDto(docs);
-        return dtos;
+        return docs;
+        //const dtos = this.mapper.taskArrayToResponseDto(docs);
+        // return dtos;
     }
 
-    async findPaginated(skip:number, limit:number, sort:string): Promise<TaskResponseDto[]> {
+    async findPaginated(skip:number, limit:number, sort:string): Promise<ITask[]> {
         const docs = await this.taskModel.find().skip(skip).limit(limit).sort(sort);
-        const dtos = this.mapper.taskArrayToResponseDto(docs);
-        return dtos;
+        return docs;
+        // const dtos = this.mapper.taskArrayToResponseDto(docs);
+        // return dtos;
     }
     
 
-    async findAllByUserId(userId:string|number, sort:string): Promise<TaskResponseDto[]> {
+    async findAllByUserId(userId:string|number, sort:string): Promise<ITask[]> {
         const docs = await this.taskModel.find({userId: userId}).sort(sort);
-        const dtos = this.mapper.taskArrayToResponseDto(docs);
-        return dtos;
+        return docs;
+        // const dtos = this.mapper.taskArrayToResponseDto(docs);
+        // return dtos;
     }
     
 
-    async findPaginatedByUserId(userId:string|number, skip:number, limit:number, sort:string): Promise<TaskResponseDto[]> {
+    async findPaginatedByUserId(userId:string|number, skip:number, limit:number, sort:string): Promise<ITask[]> {
         const docs = await this.taskModel.find({userId: userId}).skip(skip).limit(limit).sort(sort);
-        const dtos = this.mapper.taskArrayToResponseDto(docs);
-        return dtos;
+        return docs;
+        // const dtos = this.mapper.taskArrayToResponseDto(docs);
+        // return dtos;
     }
 
 
-    async findById(id: string | number): Promise<TaskResponseDto> {
+    async findById(id: string | number): Promise<ITask> {
         const doc = await this.taskModel.findById(id);
-        const dto = this.mapper.taskToResponseDto(doc);
-        return dto;
+        return doc;
+        // const dto = this.mapper.taskToResponseDto(doc);
+        // return dto;
         //** ::POPULATE::
         //** return this.taskModel.findById(id).populate('userId', 'username email').exec();
     }
 
-    async updateById(id: string | number, updatedEntity: UpdateTaskRequestDto): Promise<TaskResponseDto> {
+    async updateById(id: string | number, updatedEntity: UpdateTaskRequestDto): Promise<ITask> {
         const doc = await this.taskModel.findByIdAndUpdate(id, updatedEntity, {returnDocument: 'after'});
-        const dto = this.mapper.taskToResponseDto(doc);
-        return dto;
+        return doc;
+        // const dto = this.mapper.taskToResponseDto(doc);
+        // return dto;
     }
 
-    async removeById(id: string | number): Promise<TaskResponseDto> {
+    async removeById(id: string | number): Promise<ITask> {
         const doc = await this.taskModel.findByIdAndRemove(id);
-        const dto = this.mapper.taskToResponseDto(doc);
-        return dto;
+        return doc;
+        // const dto = this.mapper.taskToResponseDto(doc);
+        // return dto;
     }
 
     async removeByUserId(userId:string|number): Promise<Record<string, number>> {
