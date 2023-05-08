@@ -48,6 +48,7 @@ export class UserRepositoryMongo implements IRepositoryUser<IUser, CreateUserReq
     }
 
     async updateById(id: string | number, updatedEntity: UpdateUserRequestDto): Promise<IUser> {
+        console.log(updatedEntity)
         const doc = await this.userModel.findByIdAndUpdate(id, updatedEntity, {returnDocument: 'after'});
         return doc;
     }

@@ -103,11 +103,11 @@ export class UsersService {
     if(!userToUpdate) throw new NotFoundException("Not Found");
 
     //chequea si hay conflicto con los nuevos valores de username y password
-    if(updateUserDto.email !== userToUpdate.email) {
+    if(updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
       if(await this.userRepository.existsByEmail(updateUserDto.email)) 
         throw new ConflictException("Email already registered");      
     }
-    if(updateUserDto.username !== userToUpdate.username) {
+    if(updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
       if(await this.userRepository.existsByUsername(updateUserDto.username)) 
         throw new ConflictException("Username not available");      
     }
