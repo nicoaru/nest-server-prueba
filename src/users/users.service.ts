@@ -71,6 +71,9 @@ export class UsersService {
   }
 
   async findTasksByUserId(id: string|number, sort:string):Promise<TaskResponseDto[]> {
+    const exists = await this.userRepository.existsById(id);
+    if(!exists) throw new NotFoundException("Not Found");
+
     const tasks = await this.taskRepository.findAllByUserId(id, sort);
 
     const respDtos = this.mapper.taskArrayToResponseDto(tasks);
@@ -79,6 +82,9 @@ export class UsersService {
 
   async findTasksByUserIdPaginated(userId:string|number, paginationOptions:IPaginationOptions, sort:string):Promise<IPageResponse<TaskResponseDto>> {
     //** El userId ya lo parseó el pipe
+    const exists = await this.userRepository.existsById(userId);
+    if(!exists) throw new NotFoundException("Not Found");
+
     const totalDocs = await this.taskRepository.countDocsByUserId(userId);
     const {page, skip, limit, prevPage, nextPage} = getPaginationData(paginationOptions, totalDocs);
     
@@ -124,17 +130,3 @@ export class UsersService {
     return respDeleteUser;
   }
 }
-
-/*
-    const deletedUser = await this.userRepository.removeById(id);
-    if(!deletedUser) throw new NotFoundException("Not Found");
-
-    let resultDeletTasks = await this.taskRepository.removeByUserId(id);
-    console.log("Tasks pertenecientes al usuario eliminados: ", resultDeletTasks)
-
-    const deletDto = new DeleteUserResponseDto;
-    deletDto.deletedDoc = deletedUser;
-    deletDto.deletedTasks = +resultDeletTasks.deletedCount;
-
-    return deletDto;
-*/
